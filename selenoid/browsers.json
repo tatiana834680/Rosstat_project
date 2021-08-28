@@ -1,0 +1,26 @@
+{
+  "firefox": {
+    "default": "89.0",
+    "versions": {
+      "89.0": {
+        "image": "selenoid/firefox:89.0",
+        "port": "4444",
+        "path": "/wd/hub",
+        "tmpfs": {"/tmp": "size=512m"}
+      }
+    }
+  },
+  "chrome": {
+    "default": "91.0",
+    "versions": {
+      "91.0": {
+        "image": "selenoid/chrome:91.0",
+        "port": "4444",
+        "path": "/",
+        "tmpfs": {
+          "/tmp": "size=512m"
+        }
+      }
+    }
+  }
+}

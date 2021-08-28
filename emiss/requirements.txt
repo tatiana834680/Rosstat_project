@@ -1,0 +1,15 @@
+django==3.2.3
+dj-database-url==0.5.0
+psycopg2
+requests
+bs4
+selenium
+celery==4.4.2
+django-redis
+django-celery-beat==2.0.0
+django_celery_results==2.0.0
+django-admin-rangefilter
+lxml
+pandas==0.24.2
+UliPlot
+XlsxWriter

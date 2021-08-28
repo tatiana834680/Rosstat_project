@@ -1,0 +1,3 @@
+celerybeat.pid
+emiss/emiss_parse/webdriver
+emiss/celerybeat.pid

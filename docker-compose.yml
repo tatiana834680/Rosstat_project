@@ -1,0 +1,100 @@
+version: '3.7'
+
+services:
+  WEB: &WEB
+    image: web
+    build:
+      context: ./emiss
+      dockerfile: Dockerfile.local
+    env_file:
+      - .env
+    volumes:
+      - ./emiss:/app
+    ports:
+      - '8000:8000'
+    depends_on:
+      - db
+    restart: unless-stopped
+    command: bash /local_run.sh
+
+  celery:
+    <<: *WEB
+    ports: []
+    command: ["celery", "-A", "emiss", "worker", "-l", "info"]
+    depends_on:
+      - db
+      - WEB
+
+  celery-beat:
+    <<: *WEB
+    ports: []
+    command: ["celery", "-A", "emiss", "beat", "-l", "info"]
+    depends_on:
+      - db
+      - WEB
+ 
+  db:
+    image: db
+    container_name: db
+    build:
+      context: ./db
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8082:80"
+
+  # docker pull selenoid/firefox:89.0
+  # docker pull selenoid/chrome:91.0
+  selenoid:
+    image: aerokube/selenoid:latest-release
+    container_name: selenoid
+    ports:
+      - '4444:4444'
+    volumes:
+      ["./emiss/emiss_parse/sdmx:/app",
+      "./selenoid/browsers.json:/etc/selenoid/browsers.json",
+      "/var/run/docker.sock:/var/run/docker.sock"]
+    command: ['-conf', '/etc/selenoid/browsers.json','-container-network', 'emiss']
+    
+
+  selenoid-ui:
+    image: "aerokube/selenoid-ui"
+    container_name: selenoid-ui
+    links:
+      - selenoid
+    depends_on:
+      - selenoid
+    ports:
+      - '8081:8080'
+    command: ['--selenoid-uri', 'http://selenoid:4444']
+
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - '6379:6379'
+   
+
+volumes:
+  pgdata:
+  static:
+
+networks:
+  default:
+    name: emiss

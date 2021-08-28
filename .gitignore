@@ -1,0 +1,9 @@
+*__pycache__*
+.idea/
+celerybeat.pid
+celerybeat-schedule
+tmp_*
+.DS_Store
+.vscode/
+webdriver
+migrations
