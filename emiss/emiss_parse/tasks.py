@@ -35,7 +35,7 @@ def parse_emiss(self):
             'links_id').distinct()
 
         sdmx_parse_status = SDMX.objects.filter(
-            parse_status=False)
+            parse_status=True)
 
         print(sdmx_parsed_data)
         links = Links.objects.filter(
