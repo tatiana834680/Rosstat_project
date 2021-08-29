@@ -188,7 +188,6 @@ def parse_emiss(self):
                                         if check_SDMX_dublicate:
                                             print(link.name_index,
                                                 link.description, "- Дубликат")
-                                            continue
                                         else:
                                             with transaction.atomic():
                                                 sdmx = SDMX(
@@ -198,8 +197,8 @@ def parse_emiss(self):
                                                     parse_status=False,
                                                 )
                                                 sdmx.save()
-                                            driver.quit()
-                                            print("exeption on while")
+                                        driver.quit()
+                                        print("exeption on while")
                                 
                                 # Загрузка файла
                                 time.sleep(1)
@@ -271,9 +270,8 @@ def parse_emiss(self):
                                     parse_status=False,
                                 )
                                 sdmx.save()
-                            driver.quit()
-                            print("exeption on for link")
-                            raise self.retry(exc=e)
+                        driver.quit()
+                        print("exeption on for link")
                 else:
                     print("Отсутствуют данные для парсинга, необходимо проверить наличие и активность показателей ЦУР в административном интерфейсе")
             
