@@ -17,7 +17,7 @@ import io
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 
 
-@task(bind=True, autoretry_for=(Exception,), soft_time_limit=1200)
+@task(bind=True, autoretry_for=(Exception,), soft_time_limit=1500)
 def parse_emiss(self):
     try:
         capabilities = {
@@ -25,9 +25,9 @@ def parse_emiss(self):
             "browserName": "chrome",
             "browserVersion": "91.0",
             "selenoid:options": {
-                "enableVNC": True,
+                "enableVNC": False,
                 "enableVideo": False,
-                "sessionTimeout": "4m",
+                "sessionTimeout": "2m",
             }
         }
 
@@ -286,13 +286,13 @@ def parse_emiss(self):
                         print("exeption on for link")
                 else:
                     print("Отсутствуют данные для парсинга, необходимо проверить наличие и активность показателей ЦУР в административном интерфейсе")
-            
+                driver.quit()
+
     except SoftTimeLimitExceeded as e:
         print("SoftTimeLimitExceeded")
         driver.quit()
         print("quit SoftTimeLimitExceeded")
-        raise self.retry(exc=e)
-
+       
             
        
 
