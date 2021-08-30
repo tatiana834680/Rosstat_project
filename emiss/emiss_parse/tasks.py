@@ -17,7 +17,7 @@ import io
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 
 
-@task(bind=True, autoretry_for=(Exception,), soft_time_limit=600)
+@task(bind=True, autoretry_for=(Exception,), soft_time_limit=1200)
 def parse_emiss(self):
     try:
         capabilities = {
@@ -45,6 +45,7 @@ def parse_emiss(self):
         for link in links:
                 if link:
                     try:
+                        print(link.name_index)
                         driver = webdriver.Remote(
                             command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
                         driver.maximize_window()
@@ -94,7 +95,7 @@ def parse_emiss(self):
                                     By.CLASS_NAME, 'k-header:not(.hidden-col)')
                                 print("Первичный поиск ссылок ", len(links))
                                 i = 0
-
+                                time_counter = 0
                                 # Проход по ссылкам
                                 while i <= len(links)-1:
                                     try:
@@ -105,81 +106,89 @@ def parse_emiss(self):
 
                                         preloader = driver.find_element(
                                             By.CLASS_NAME, 'agrid-loader')
-                                        if preloader.is_displayed():
-                                            print("Ожидание 5 секунд")
-                                            time.sleep(5)
-                                        else:
 
-                                            # Условие для сработки скрола
-                                            Link_is_displayed = links[i].find_element(
-                                                By.CLASS_NAME, 'k-filter')
-                                            if Link_is_displayed.is_displayed():
-                                                print("element is visible")
-                                                pass
+                                        if time_counter!=50:
+                                            if preloader.is_displayed():
+                                                print("Ожидание 5 секунд")
+                                                time.sleep(5)
+                                                time_counter = time_counter+5
+                                                print('time_counter ',
+                                                      time_counter)
                                             else:
-                                                print("element invisible - scroll")
-                                                option = driver.find_element(
-                                                    By.CLASS_NAME, 'mCSB_scrollTools_horizontal')
-                                                # gragbar_size = option.size
-                                                # gragbar_width = gragbar_size['width']
+                                                time_counter=0
+                                                # Условие для сработки скрола
+                                                Link_is_displayed = links[i].find_element(
+                                                    By.CLASS_NAME, 'k-filter')
+                                                if Link_is_displayed.is_displayed():
+                                                    print("element is visible")
+                                                    pass
+                                                else:
+                                                    print("element invisible - scroll")
+                                                    option = driver.find_element(
+                                                        By.CLASS_NAME, 'mCSB_scrollTools_horizontal')
+                                                    # gragbar_size = option.size
+                                                    # gragbar_width = gragbar_size['width']
 
-                                                scrollbar = option.find_element(
-                                                    By.CLASS_NAME, 'mCSB_dragger')
-                                                # scrollbar_size = scrollbar.size
-                                                # scrollbar_width = scrollbar_size['width']
+                                                    scrollbar = option.find_element(
+                                                        By.CLASS_NAME, 'mCSB_dragger')
+                                                    # scrollbar_size = scrollbar.size
+                                                    # scrollbar_width = scrollbar_size['width']
 
-                                                action = ActionChains(driver)
-                                                # Условие если елемент не виден то сдвинуть скролл на 50 px
-                                                while Link_is_displayed.is_displayed() == False:
-                                                    try:
-                                                        action.drag_and_drop_by_offset(
-                                                            scrollbar, 50, 1)
-                                                        action.release()
-                                                        action.perform()
-                                                    except:
-                                                        print("scroll drug is out")
-                                                        break
+                                                    action = ActionChains(driver)
+                                                    # Условие если елемент не виден то сдвинуть скролл на 50 px
+                                                    while Link_is_displayed.is_displayed() == False:
+                                                        try:
+                                                            action.drag_and_drop_by_offset(
+                                                                scrollbar, 50, 1)
+                                                            action.release()
+                                                            action.perform()
+                                                        except:
+                                                            print("scroll drug is out")
+                                                            break
 
-                                            # Клик по фильтру
-                                            links[i].find_element(
-                                                By.CLASS_NAME, 'k-filter').click()
-                                            try:
-                                                # Дожидаемся грида
-                                                elem = WebDriverWait(driver, 300).until(
-                                                    EC.presence_of_element_located(
-                                                        (By.CLASS_NAME, 'k-grid')))
-                                            finally:
-                                                print("grid loaded after filter",
-                                                    i, 'из', len(links)-1)
-                                                # Открываем фильрацию
+                                                # Клик по фильтру
+                                                links[i].find_element(
+                                                    By.CLASS_NAME, 'k-filter').click()
                                                 try:
+                                                    # Дожидаемся грида
                                                     elem = WebDriverWait(driver, 300).until(
                                                         EC.presence_of_element_located(
-                                                            (By.CLASS_NAME, 'k-filter-menu'))
-                                                    )
+                                                            (By.CLASS_NAME, 'k-grid')))
                                                 finally:
-                                                    # Проверка на установленные фильтры
-                                                    chech_filter_open = elem.find_element(
-                                                        By.CLASS_NAME, 'k-other-filters')
-                                                    if chech_filter_open.is_displayed():
-                                                        elem.find_element(
-                                                            By.CLASS_NAME, 'sp_checkbox').click()
-                                                    driver.find_element(
-                                                        By.CLASS_NAME, 'k-filter-load').click()
-                                                    time.sleep(2)
+                                                    print("grid loaded after filter",
+                                                        i, 'из', len(links)-1)
+                                                    # Открываем фильрацию
+                                                    try:
+                                                        elem = WebDriverWait(driver, 300).until(
+                                                            EC.presence_of_element_located(
+                                                                (By.CLASS_NAME, 'k-filter-menu'))
+                                                        )
+                                                    finally:
+                                                        # Проверка на установленные фильтры
+                                                        chech_filter_open = elem.find_element(
+                                                            By.CLASS_NAME, 'k-other-filters')
+                                                        if chech_filter_open.is_displayed():
+                                                            elem.find_element(
+                                                                By.CLASS_NAME, 'sp_checkbox').click()
+                                                        driver.find_element(
+                                                            By.CLASS_NAME, 'k-filter-load').click()
+                                                        time.sleep(5)
 
-                                            new_links = driver.find_elements(
-                                                By.CLASS_NAME, 'k-header:not(.hidden-col)')
+                                                new_links = driver.find_elements(
+                                                    By.CLASS_NAME, 'k-header:not(.hidden-col)')
 
-                                            # Условие проверки появления новыз фильтров
-                                            if len(links) == len(new_links):
-                                                pass
-                                            else:
-                                                # Переприсваиваем состав фильтров на новый состав
-                                                i = 0
-                                                links = new_links
+                                                # Условие проверки появления новыз фильтров
+                                                if len(links) == len(new_links):
+                                                    pass
+                                                else:
+                                                    # Переприсваиваем состав фильтров на новый состав
+                                                    i = 0
+                                                    links = new_links
+                                        else:
+                                            print("quit counter 50")
+                                            driver.quit()
 
-                                            i = i + 1
+                                        i = i + 1
                                     except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
                                         print(e)
                                         check_SDMX_dublicate = SDMX.objects.filter(
@@ -198,6 +207,7 @@ def parse_emiss(self):
                                                 )
                                                 sdmx.save()
                                         driver.quit()
+                                        print("quit exeption")
                                         print("exeption on while")
                                 
                                 # Загрузка файла
@@ -211,47 +221,48 @@ def parse_emiss(self):
                                     By.ID, 'download_sdmx_file').click()
 
                                 time.sleep(5)
-                                
+                                    
                                 # Получаем файл из Selenoid и проверяем на валидность
-                                url = 'http://selenoid:4444/download/' + \
-                                    driver.session_id+'/' + \
-                                    os.environ['EMISS_FILE_MANE']
-                                response = requests.get(url)
-                                if response.status_code != 200:
-                                    while response.status_code != 200:
-                                        url = 'http://selenoid:4444/download/' + \
-                                            driver.session_id+'/' + \
-                                            os.environ['EMISS_FILE_MANE']
-                                        response = requests.get(url)
+                                if driver.session_id:
+                                    url = 'http://selenoid:4444/download/' + \
+                                        driver.session_id+'/' + \
+                                        os.environ['EMISS_FILE_MANE']
+                                    response = requests.get(url)
+                                    if response.status_code != 200:
+                                        while response.status_code != 200:
+                                            url = 'http://selenoid:4444/download/' + \
+                                                driver.session_id+'/' + \
+                                                os.environ['EMISS_FILE_MANE']
+                                            response = requests.get(url)
 
-                                sdmx_content = response.text
-                                try:
-                                    f = io.StringIO(str(sdmx_content))
-                                    ET.parse(f)
-                                    validate_status = True
-                                except Exception as e:
-                                    print("Показатель ", link.description,
-                                        " - XML не соответвует формату XML, требутся привести в соответствие формату XML")
-                                    validate_status = False
+                                    sdmx_content = response.text
+                                    try:
+                                        f = io.StringIO(str(sdmx_content))
+                                        ET.parse(f)
+                                        validate_status = True
+                                    except Exception as e:
+                                        print("Показатель ", link.description,
+                                            " - XML не соответвует формату XML, требутся привести в соответствие формату XML")
+                                        validate_status = False
 
-                                check_SDMX_dublicate = SDMX.objects.filter(
-                                    links_id=link)
+                                    check_SDMX_dublicate = SDMX.objects.filter(
+                                        links_id=link)
 
-                                if check_SDMX_dublicate:
-                                    print(link.name_index,
-                                        link.description, "- Дубликат")
-                                else:
-                                    with transaction.atomic():
-                                        sdmx = SDMX(
-                                            sdmx_data=sdmx_content,
-                                            index=link.name_index,
-                                            links_id=link,
-                                            description=link.description,
-                                            parse_status=True,
-                                            validate_status=validate_status,
-                                        )
-                                        sdmx.save()
-                                        driver.quit()
+                                    if check_SDMX_dublicate:
+                                        print(link.name_index,
+                                            link.description, "- Дубликат")
+                                    else:
+                                        with transaction.atomic():
+                                            sdmx = SDMX(
+                                                sdmx_data=sdmx_content,
+                                                index=link.name_index,
+                                                links_id=link,
+                                                description=link.description,
+                                                parse_status=True,
+                                                validate_status=validate_status,
+                                            )
+                                            sdmx.save()
+                                            driver.quit()
 
                     except (TimeoutException, TimeLimitExceeded, SoftTimeLimitExceeded, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
                         print(e)
@@ -271,12 +282,15 @@ def parse_emiss(self):
                                 )
                                 sdmx.save()
                         driver.quit()
+                        print("quit exeption save")
                         print("exeption on for link")
                 else:
                     print("Отсутствуют данные для парсинга, необходимо проверить наличие и активность показателей ЦУР в административном интерфейсе")
             
     except SoftTimeLimitExceeded as e:
         print("SoftTimeLimitExceeded")
+        driver.quit()
+        print("quit SoftTimeLimitExceeded")
         raise self.retry(exc=e)
 
             
