@@ -17,7 +17,7 @@ import io
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 
 
-@task(bind=True, name='emiss_parse', autoretry_for=(TimeoutException, SoftTimeLimitExceeded), soft_time_limit=1500, max_retries=5)
+@task(bind=True, name='emiss_parse', autoretry_for=(TimeoutException, SoftTimeLimitExceeded,TimeLimitExceeded), soft_time_limit=3600, max_retries=5)
 def parse_emiss(self):
     try:
         capabilities = {
