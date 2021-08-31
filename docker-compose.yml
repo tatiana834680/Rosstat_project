@@ -20,7 +20,7 @@ services:
   celery:
     <<: *WEB
     ports: []
-    command: ["celery", "-A", "emiss", "worker", "-l", "info"]
+    command: ["celery", "-A", "emiss", "worker",  "--concurrency=1", "-l", "info"]
     depends_on:
       - db
       - WEB
