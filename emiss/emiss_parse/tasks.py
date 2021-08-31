@@ -49,6 +49,7 @@ def parse_emiss(self):
                     driver = webdriver.Remote(
                         command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
                     driver.maximize_window()
+                    session_id = driver.session_id
                     driver.get(link.urls)
                     try:
                         elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located(
@@ -208,12 +209,14 @@ def parse_emiss(self):
                                                 links_id=link,
                                                 description=link.description,
                                                 parse_status=False,
+                                                validate_status=False,
                                             )
                                             sdmx.save()
                                     
-                                    # driver.quit()
+                                   
                                     print("quit exeption")
                                     print("exeption on while")
+                                    # driver.quit()
                                     continue
 
                             # Загрузка файла
@@ -229,16 +232,16 @@ def parse_emiss(self):
                             time.sleep(5)
 
                             # Получаем файл из Selenoid и проверяем на валидность
-                            if driver.session_id:
+                            if session_id:
                                 url = 'http://selenoid:4444/download/' + \
-                                    driver.session_id+'/' + \
+                                    session_id+'/' + \
                                     os.environ['EMISS_FILE_MANE']
                                 response = requests.get(url)
                                 if response.status_code != 200:
                                     counter =1
                                     while response.status_code != 200 and counter !=20:
                                         url = 'http://selenoid:4444/download/' + \
-                                            driver.session_id+'/' + \
+                                            session_id+'/' + \
                                             os.environ['EMISS_FILE_MANE']
                                         response = requests.get(url)
                                         counter=counter+1
@@ -288,11 +291,13 @@ def parse_emiss(self):
                                 links_id=link,
                                 description=link.description,
                                 parse_status=False,
+                                validate_status=False,
                             )
                             sdmx.save()
-                    # driver.quit()
+                    
                     print("quit exeption save")
                     print("exeption on for link")
+                    # driver.quit()
                     continue
             else:
                 print("Отсутствуют данные для парсинга, необходимо проверить наличие и активность показателей ЦУР в административном интерфейсе")
