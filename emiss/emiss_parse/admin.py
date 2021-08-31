@@ -21,12 +21,11 @@ import pytz
 
 @admin.action(description='Обработать SDMX')
 def parse_data(modeladmin, request, queryset):
-    queryset.update(validate_status=True)
     
     # Константа отсутсвующих данных
     const_out_value = '_T'
     sdmx_datas = queryset.filter(
-        validate_status=True).filter(activity=True)
+        validate_status=True).filter(activity=True).filter(parse_status=True)
     
     # Таймзона для установки для дат без таймзоны
     my_tz = pytz.timezone('Europe/Moscow')
