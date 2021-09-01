@@ -14,7 +14,7 @@ class Command(BaseCommand):
         # Константа отсутсвующих данных
         const_out_value = '_T'
         sdmx_datas = SDMX.objects.filter(
-            validate_status=True).filter(activity=True)
+            validate_status=True).filter(activity=True).filter(parse_status=True)
         my_tz = pytz.timezone('Europe/Moscow')
         for sdmx_data in sdmx_datas:
             soup = BeautifulSoup(sdmx_data.sdmx_data, 'xml')
