@@ -17,7 +17,7 @@ import io
 from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
 
 
-@task(bind=True, name='emiss_parse', autoretry_for=(TimeoutException, SoftTimeLimitExceeded, TimeLimitExceeded), soft_time_limit=10800, max_retries=5, time_limit=10800)
+@task(bind=True, name='emiss_parse', autoretry_for=(WebDriverException, TimeoutException, SoftTimeLimitExceeded, TimeLimitExceeded), soft_time_limit=14400, max_retries=5, time_limit=14400)
 def parse_emiss(self):
     try:
         capabilities = {
@@ -190,8 +190,8 @@ def parse_emiss(self):
                                                 links = new_links
                                     else:
                                         print("quit counter 50")
-                                        # driver.quit()
-                                        continue
+                                        driver.quit()
+                                        # continue
 
                                     i = i + 1
                                 except (NoSuchElementException, WebDriverException) as e:
@@ -216,8 +216,8 @@ def parse_emiss(self):
                                    
                                     print("quit exeption")
                                     print("exeption on while")
-                                    # driver.quit()
-                                    continue
+                                    driver.quit()
+                                    # continue
 
                             # Загрузка файла
                             time.sleep(1)
@@ -297,15 +297,15 @@ def parse_emiss(self):
                     
                     print("quit exeption save")
                     print("exeption on for link")
-                    # driver.quit()
-                    continue
+                    driver.quit()
+                    # continue
             else:
                 print("Отсутствуют данные для парсинга, необходимо проверить наличие и активность показателей ЦУР в административном интерфейсе")
-            # driver.quit()
+                driver.quit()
 
     except SoftTimeLimitExceeded as e:
         print("SoftTimeLimitExceeded")
-        # driver.quit()
+        driver.quit()
         print("quit SoftTimeLimitExceeded")
 
 
