@@ -19,6 +19,12 @@
 **Используемые инструменты:**
 Python/Django, Selenium, PostgreSQL, Celery, Redis, Docker
 
+**Демонстрация работы приложения:**
+[ссылка на видео](https://disk.yandex.ru/i/mzSVdzT0JtFD6w)
+
+**Итоговый документ единого формата:**
+[ссылка на документ](https://disk.yandex.ru/i/Vb0VkzLwEb7fwQ)
+
 
 ## Инструкция по запуску приложения
 ### Предварительные действия:
